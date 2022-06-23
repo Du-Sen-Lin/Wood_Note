@@ -1,0 +1,3 @@
+/home/thundersoft/HDD/wood/work/Research/CPP/cmakedemo/build/CMakeFiles/rebuild_cache.dir
+/home/thundersoft/HDD/wood/work/Research/CPP/cmakedemo/build/CMakeFiles/edit_cache.dir
+/home/thundersoft/HDD/wood/work/Research/CPP/cmakedemo/build/CMakeFiles/dymc_lib.dir

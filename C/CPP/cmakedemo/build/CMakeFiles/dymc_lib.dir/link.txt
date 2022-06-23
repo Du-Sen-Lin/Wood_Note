@@ -1,0 +1,1 @@
+/usr/bin/cc -fPIC -O3 -DNDEBUG  -shared -Wl,-soname,libdymc_lib.so -o ../lib/libdymc_lib.so CMakeFiles/dymc_lib.dir/src/test_a.c.o CMakeFiles/dymc_lib.dir/src/test_b.c.o CMakeFiles/dymc_lib.dir/src/test_c.c.o 

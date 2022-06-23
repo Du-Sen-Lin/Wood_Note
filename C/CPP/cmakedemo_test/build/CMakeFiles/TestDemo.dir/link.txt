@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG   CMakeFiles/TestDemo.dir/src/test_main.c.o  -o ../bin/TestDemo   -L/home/thundersoft/HDD/wood/work/Research/CPP/cmakedemo_test/lib  -Wl,-rpath,/home/thundersoft/HDD/wood/work/Research/CPP/cmakedemo_test/lib -ldymc_lib -ldymc_lib 

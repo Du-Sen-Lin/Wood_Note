@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/00_class.h
+iostream
+-
+
+/home/thundersoft/HDD/wood/work/Research/CPP/testDemo/cmakedemo/src/00_class.cpp
+iostream
+-
+string
+-
+00_class.h
+/home/thundersoft/HDD/wood/work/Research/CPP/testDemo/cmakedemo/src/00_class.h
+
