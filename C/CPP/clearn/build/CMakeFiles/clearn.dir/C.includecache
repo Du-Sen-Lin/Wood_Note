@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/thundersoft/HDD/wood/work/Research/CPP/clearn/src/00_base.c
+stdio.h
+-
+limits.h
+-
+stdlib.h
+-
+time.h
+-
+

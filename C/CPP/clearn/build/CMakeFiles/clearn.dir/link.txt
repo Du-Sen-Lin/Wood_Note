@@ -1,0 +1,1 @@
+/usr/bin/cc -O3 -DNDEBUG   CMakeFiles/clearn.dir/src/00_base.c.o  -o ../bin/clearn 
