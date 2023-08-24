@@ -147,7 +147,11 @@ public class JavaOop {
 
 ​			匿名内部类；代码块；枚举；
 
-8、API使用技巧：
+9、多线程
+
+10、List: ArrayList ; LinkList
+
+11、Set
 
 
 
