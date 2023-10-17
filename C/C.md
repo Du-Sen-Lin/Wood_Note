@@ -236,11 +236,7 @@ TARGET_LINK_LIBRARIES(TestDemo dymc_lib)
 
 
 
-
-
-
-
-## 2、C基础
+## 2、C 基础
 
  1、extern ex: 声明变量名而不定义, 不需要建立存储空间。需要在一个源文件中引用另外一个源文件中定义的变量，我们只需在引用的文件中将变量加上 extern 关键字的声明即可。
 
@@ -324,7 +320,7 @@ int* getRandom() {
 
 ## 3、C++ 基础
 
-### 3-1、linux环境安装、windows vs2019安装
+### 3-1、linux环境安装、windows vs2019/2022 安装
 
 ### 3-2、C++工作原理：编译与链接
 
@@ -680,45 +676,67 @@ public: 都可以访问它。
 
 
 
-# 四、W
+### 3-26、C++ 数组
 
-## 1、Effective Modern C++
+1、数组分配方式
 
-### Effective Modern C++ （一）:
+```c++
+// 栈中分配，生命周期在{}内
+int a[5];
+// 数组大小：不要直接访问数组元素个数，可以sizeof(a)/sizeof(int)得到count, 但是这个方法必须在栈中分配数组。不过这种方法也很糟糕，最好自己维护。
+int count = sizeof(a) / sizeof(int);
+// 自己维护
+static const int exampleSize=5;
+int example[exampleSize];
 
-#### 1、类型推导
+// 堆中分配，生命周期在被销毁前一直在，所有需要delete example[]手动销毁
+int* example = new int[5];
 
-##### （1）模板类型推导；
+// C++11 std::array 会自己做边界检查，使用std数组比原始数组会安全得多。
+#include <array>
+std::array<int, 5> another;
+int count = another.size();
 
-##### （2）auto类型推导；
+```
 
-##### （3）decltype;
 
-#####   (4) 查看类型推导结果：
 
-IDE编辑器；编译器诊断；运行时输出（typeid(x).name()）
+### 3-27、C++字符串
 
-#### 2、auto
+1、字符串
 
-  作用：让编译器分析表达式所属的类型。必须初始化。
+```c++
+// 习惯const, 不想去改变这些的值， 可变就不用const； 字符串是不可变的，不能扩展字符串使它变大，因为这是一个固定分配的内存块；字符串从指针的内存地址开始，直到碰到0， 空终止字符; 长度，strlen(name); 
+const char* name = "Wood";
+// 等价于
+const char name2 = {'W', 'o', 'o', 'd', '\0'}
+// 如果需要扩展，需要执行一个全新的分配并删除旧的字符串
 
-#####   （5) 优先考虑auto而非显式类型声明；
+// C++ std::string; name.size(); 
+std::string name = "Wood";
+// 追加：不能 std::string name = "Wood" + " Hello!";
+std::string name = std::string("Wood") + " Hello!";
+// or
+std::string name = "Wood";
+name += " Hello!";
+// find
+bool contains = name.find("no") != std::string::npos;
+// 函数使用传递string：把类（对象）传递给一个函数时，实际上是在复制这个类（对象），所以操作（如追加）不会影响到传递的原始字符串。 相当于只读情况，由于字符串复制较慢，所以为了优化速度，只读情况下确保使用常量引用传递它。
+// 只读较慢 void PrintString(std::string string)
+// 可修改：加上常量const和引用&; 引用意味着不会被复制，const 意味承诺不会在这里修改它
+void PrintString(const std::string& string){}
 
- 顶层const: int* const p1 = &a; 修饰p1, 即指针本身，赋值规则：https://blog.csdn.net/weixin_43744293/article/details/117955427
+```
 
- 底层const: const int* p2 = &a; 修饰*p2, 即指针的指向地址的值，https://blog.csdn.net/weixin_43744293/article/details/117440727
 
-#####   （6）auto推导若非己愿，使用显式类型初始化惯用法
 
-不可见的代理类可能会使auto从表达式中推导出“错误的”类型;
 
-解决办法：显式类型初始器惯用法强制auto推导出你想要的结果; 如 auto sum = static_cast<Matrix>(m1 + m2 + m3 + m4);
 
-### Effective Modern C++ （二）:
+# 四、进阶
 
-#### 3、现代C++
 
-  (7) 
+
+
 
 
 
