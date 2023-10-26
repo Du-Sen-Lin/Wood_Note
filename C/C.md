@@ -714,19 +714,141 @@ const char name2 = {'W', 'o', 'o', 'd', '\0'}
 
 // C++ std::string; name.size(); 
 std::string name = "Wood";
-// 追加：不能 std::string name = "Wood" + " Hello!";
+// 追加：不能 std::string name = "Wood" + " Hello!"; 需要先封装成一个对象
 std::string name = std::string("Wood") + " Hello!";
 // or
 std::string name = "Wood";
 name += " Hello!";
 // find
 bool contains = name.find("no") != std::string::npos;
-// 函数使用传递string：把类（对象）传递给一个函数时，实际上是在复制这个类（对象），所以操作（如追加）不会影响到传递的原始字符串。 相当于只读情况，由于字符串复制较慢，所以为了优化速度，只读情况下确保使用常量引用传递它。
+// 函数使用传递string：把类（对象）传递给一个函数时，实际上是在复制这个类（对象），所以操作（如追加）不会影响到传递的原始字符串。 相当于只读情况，由于字符串复制较慢, 还会分配空间，所以为了优化速度，只读情况下确保使用常量引用传递它。
 // 只读较慢 void PrintString(std::string string)
 // 可修改：加上常量const和引用&; 引用意味着不会被复制，const 意味承诺不会在这里修改它
 void PrintString(const std::string& string){}
 
 ```
+
+2、字符串自变量
+
+```C++
+// 标准用法
+const char* name = "Wood"; // 等价于 const char* name = u8"Wood";
+// 如果要修改
+char name[8] = "Wood";
+// 扩展
+const char* name = u8"Wood"; // 一个字节的字符
+const wchar_t* name2 = L"Wood"; //
+const char16_t* name3 = u"Wood"; // 2个字节16bit的字符
+const char32_t* name4 = U"Wood"; // 4个字节32bit的字符
+// C++14 中一些让事情变得简单的库 
+using namespace std::string_literals;
+std::string name0 = "luckey"s + "Wood"; // s是一个操作符函数，返回标准字符串（对象）
+
+// 段落长文 方式1 加上R,忽略转义字符
+const char* ex = R"(Line1
+Line2
+Line3
+Line4)";
+//2
+const char* ex2 = "Line1\n"
+    "Line2\n"
+    "Line3\n";
+```
+
+ 字符串自变量的内存： 字符串自变量永远保存在内存的只读区域内。
+
+### 3-28、C++ 的const
+
+1、让代码更干净，承诺某些东西不变。（但是可以绕过，是否遵守诺言取决于你自己。）
+
+2、用法
+
+```c++
+// 常量
+const int MAX_AGE = 90;
+// 指针
+const int* a = new int;  // 不能修改该指针指向的内容(数据 *a), 可把实际的指针本身重新赋值（a）；等价于 int const* a = new int; 
+int* const a = new int; // 可以改变指针指向的内容（*a）, 不能把实际的指针本身重新赋值(a), 指向别的东西
+const int* const a = new int;  //不能改变指针指向的内容（*a）, 也不能改变指针本身
+// 方法名之后，与变量无关。 只能在类中有效, 意味着该方法不会修改任何实际的类，可以看到不能修改类成员变量。只读不写。set 就不能用const 
+class Entity
+{
+private:
+    int m_X, m_Y;
+public:
+    int GetX() const{
+        return m_X;
+    }
+};
+// 如果m_X是一个指针，想让它保持不变，写法如下。3个const,意味着 指针的内容也不能修改， 返回了一个不能被修改的指针， 函数承诺不修改实际的Entity类。
+class Entity
+{
+private:
+    int* m_X, m_Y; // m_X是一个指针，m_Y是int整型。想让同一行是指针，int* m_X, *m_Y; 
+public:
+    const int* const GetX() const{
+        return m_X;
+    }
+};
+
+// 类中const的方法， 在有常量引用情况下就可以调用，如：
+void PrintEntity(const Entity& e){
+    std::cout<<e.GetX()<<std::endl;
+}
+```
+
+mutable: 某些原因，又确实需要改变一些变量。
+
+```c++
+class Entity
+{
+private:
+    int m_X, m_Y;
+    mutable int var; // mutable 允许函数是常量方法，但是可以修改变量。
+public:
+    int GetX() const{
+        var = 2;
+        return m_X;
+    }
+};
+```
+
+### 3-29、C++ 的mutable 关键字
+
+1、与const一起使用：标记类成员为mutable, 类中的const 方法可以修改这个成员。
+
+2、用在lambda表达式中：像一个一次性的小函数，写出来并赋值给一个变量。实践中不会发生，用不到。
+
+```c++
+int x =8;
+auto f = [=]() mutable{ //= 值传递， &引用传递, 不用 mutable 则需要定义一个 int y; y = x; y++;
+    x++;
+   	std::cout<< x<< std::endl;
+}
+f();
+// x = 8
+```
+
+### 3-30、C++的成员初始化列表
+
+1、构造函数初始化类成员：成员初始化列表时，要与成员变量声明时的顺序一致。
+
+2、为何使用成员初始化列表：风格干净；功能上对性能的浪费；
+
+### 3-31、C++的三元操作符
+
+1、三元运算符：一个问号，一个冒号。if语句的语法糖。
+
+```c++
+s_Speed = s_Level > 5?10:5;
+// 等价于
+if (s_Level > 5)
+    s_Speed = 10;
+else
+    s_Speed = 5;
+```
+
+
 
 
 
