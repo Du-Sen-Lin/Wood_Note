@@ -534,7 +534,7 @@ class Entity{
 public:
     float X, Y;
     Entity(){
-        
+         
     }
 };
 ```
@@ -666,7 +666,7 @@ public:
 
 2、C++中3个基础的可见性修饰符：private、protected 和 public
 
-private: 只用（并不）该类可以访问这些变量。但是C++中有个叫 friend 的关键字，可以让类或函数成为该类的友元，也可以访问。
+private: 只有（并不）该类可以访问这些变量。但是C++中有个叫 friend 的关键字，可以让类或函数成为该类的友元，也可以访问。
 
 protected: 这个类和层次结构中的所有子类，可以访问这些符号。但是比如在main() 中依然不能访问。
 
@@ -847,6 +847,333 @@ if (s_Level > 5)
 else
     s_Speed = 5;
 ```
+
+### 3-32、创建并初始化C++对象
+
+1、应用程序，会将内存分为两个部分：栈和堆。
+
+2、栈对象：有一个自动的生存期，由声明的地方的作用域决定。大多数情况下都这样做。
+
+3、堆对象：手动释放。如果想放在函数生存期之外，对象很大（栈空间相对较小），需要在堆上进行分配。
+
+### 3-33、C++ new关键字
+
+1、new主要目的：在堆上分配内存。new + 数据类型（类/基本类型/数组), 决定了必要的分配大小，以字节为单位。如new int, 将需要4个字节的内存，需要找到一共包含4个字节内存的连续块，找到后，返回一个指向这个内存的指针，这样就可以开始使用数据，存储、读写访问。
+
+2、找包含连续的空闲内存：并不是顺序扫描。 有一个空闲列表，会维护那些有空闲字节的地址。
+
+3、再次强调：指针只是一个内存地址，指针之所以需要类型，是因为需要类型来操控它。
+
+### 3-34、C++ 隐式转换与explicit关键字
+
+1、C++隐式构造函数和隐式转换。尽量避免使用。
+
+```c++
+#include<iostream>
+#include<string>
+
+class Entity
+{
+private:
+    std::string m_Name;
+    int m_Age;
+public:
+    Entity(const std::string& name):m_Name(name), m_Age(-1){}
+    Entity(int age):m_Name("UnKnown"), m_Age(age){}
+};
+
+int main(){
+    //常用方式（栈）
+    // Entity a("Wood");
+    // Entity b(25);
+
+    // 隐式转换（隐式构造函数）
+    Entity a = "Wood";
+    Entity b = 22;
+
+    std::cin.get();
+}
+```
+
+2、explicit关键字：禁用隐式implicit的功能。放在构造函数的前面，意味着没有隐式的转换。
+
+### 3-35、C++运算符及其重载
+
+1、运算符：是使用的一种符号，通常代替一个函数来执行一些事情。运算符重载：定义和更改使用的性质。 
+
+### 3-36、C++的this关键字
+
+1、访问成员函数（一个属于某个类的函数）；在方法内部，引用this, this是一个指向当前对象实例的指针，该方法属于这个对象实例。
+
+### 3-37、C++的智能指针
+
+1、new在堆上分配内存，需要delete释放内存。智能指针实现这一过程自动化，当你调用new的时候，不用调用delete，甚至不需要调用new。
+
+2、智能指针：一个原始指针的包装。创建一个智能指针，它会调用new并为你分配内存，然后基于你使用的智能指针，这些内存会在某一时刻自动释放。
+
+3、智能指针 unique_ptr, 是作用域指针, 只是一个栈分配对象，当栈分配对象死亡时，将调用delete在你的指针上，并释放内存。
+
+4、不能复制。如果你想复制或者分享，使得这个指针可以被传递到一个函数中或者一个类中，不能复制。 std::unique_ptr 是一个不能被拷贝的类。 因为它会导致两个 std::unique_ptr 实例共同拥有相同的资源，这是不被允许的。如果要分享，可以使用shared_ptr。
+
+5、shared_ptr的工作方式是引用计数，跟踪你的指针有多少个引用。一但引用计数达到0，就被删除。
+
+6、弱指针 weak_ptr: 不会增加引用计数。用处：如果不想用Entity类的所有权，例如排序一个Entity列表，不关心他们是否有效，只需要存储它们的一个引用。
+
+```c++
+#include<iostream>
+#include<string>
+#include<memory>
+
+class Entity{
+public:
+    Entity(){
+        std::cout<<"Create Entity!"<<std::endl;
+    }
+
+    ~Entity(){
+        std::cout<<"Destroyed Entity!"<<std::endl;
+    }
+    void Print(){}
+};
+
+int main(){
+    {
+        // std::unique_ptr<Entity> entity(new Entity()); //ok, 一般不这样写
+        std::unique_ptr<Entity> entity = std::make_unique<Entity>(); // ok, 异常安全
+        // std::unique_ptr<Entity> e0 = entity; // 错误， std::unique_ptr 是一个不能被拷贝的类。 因为它会导致两个 std::unique_ptr 实例共同拥有相同的资源，这是不被允许的。
+
+        // shared_ptr
+        std::shared_ptr<Entity> sharedEntity = std::make_shared<Entity>();
+        std::shared_ptr<Entity> e0 = sharedEntity;
+
+        // 弱指针
+        std::weak_ptr<Entity> weakEntity = sharedEntity; // 相比shared_ptr，不会增加引用计数。
+
+        entity->Print();
+    }
+
+    std::cin.get();
+}
+// g++ unique_ptr_ex.cpp -o unique_ptr_ex
+// ./unique_ptr_ex
+
+```
+
+7、如果想自动化内存管理，尽量使用智能指针 unique_ptr, 开销更低。shared_ptr因为还要维护一个引用计数，所有有额外开销。但是如果需要在对象之间共享，就使用shared_ptr。
+
+
+
+### 3-38、C++的复制和拷贝构造函数
+
+1、拷贝：指要求复制数据，复制内存。有时候需要避免，因为浪费性能。
+
+2、深拷贝：根据定义，复制整个对象。记住，使用const 引用来传递对象，如PrintString 函数。
+
+```markdown
+**避免拷贝**：如果你传递一个对象作为参数，而不使用引用，会导致对象的拷贝。对于大型对象或者需要频繁传递的对象来说，这可能会带来性能开销。使用引用可以避免这种拷贝，提高程序的效率。
+
+**保护原始对象**：使用 const 修饰引用意味着在函数内部不能修改原始对象的状态。这提供了一定程度的安全，因为你可以确保在函数内部不会意外地修改传递的对象。
+
+**允许操作临时对象**：如果你有一个临时对象（例如在函数调用中创建的对象），你可以通过使用 const 引用来传递它，因为临时对象无法作为非常量引用的参数传递。
+
+**更通用的函数**：使用 const 引用允许你编写更通用的函数，因为它们可以接受常量和非常量对象作为参数。
+
+**避免不必要的拷贝和内存开销**：当你传递大型对象时，使用 const 引用可以避免不必要的拷贝操作，从而减少了内存开销。
+```
+
+
+
+```C++
+#include<iostream>
+#include<string>
+#include<cstring>
+
+class String{
+private:
+    char* m_Buffer;
+    unsigned int m_Size;
+public:
+    String(const char* string){
+        m_Size = strlen(string);
+        m_Buffer = new char[m_Size + 1];
+        memcpy(m_Buffer, string, m_Size + 1);
+        //  memcpy(m_Buffer, string, m_Size);
+        //  m_Buffer[m_Size] = 0;
+    }
+    // 添加拷贝构造函数
+    String(const String& other): m_Size(other.m_Size){
+        std::cout<<"copy-------"<<std::endl;
+        // m_Size = other.m_Size;
+        m_Buffer = new char[m_Size + 1];
+        memcpy(m_Buffer, other.m_Buffer, m_Size + 1);
+    }    
+    ~String(){ // 不加会内存泄漏
+        delete[] m_Buffer;
+    }
+    char& operator[](unsigned int index){
+        return m_Buffer[index];
+    }
+    friend std::ostream& operator<<(std::ostream& stream, const String& string);
+};
+
+std::ostream& operator<<(std::ostream& stream, const String& string){
+    stream << string.m_Buffer;
+    return stream;
+}
+
+// 不写 void PrintString(String string)，这样会多次调用拷贝构造函数，每次调用都会发生复制，浪费性能。直接传引用，只发生String second = string 这一个复制。
+void PrintString(const String& string){
+    std::cout<<string<<std::endl;
+}
+
+int main(){
+    String string = "Wood";
+    // 赋值 -- 崩溃：浅拷贝，默认的拷贝构造函数。代码中，当你执行 String second = string; 时，实际上只是将 m_Buffer 的指针从 string 复制到了 second，而不是创建一个新的内存副本。
+    // string 和 second 都被销毁时，它们会尝试释放相同的内存，导致了问题。
+    // 需要实现一个自定义的拷贝构造函数，以确保在创建新对象时会分配新的内存并复制原始字符串。
+    // String second = string;
+    // std::cout << string << std::endl;
+    // std::cout << second << std::endl;
+
+    // 要做的：分配一个新的char数组，来存储复制的字符串。深拷贝，实现拷贝构造函数。
+    String second = string;
+    second[2] = 'a';
+    PrintString(string);
+    PrintString(second);
+    // std::cout << string << std::endl;
+    // std::cout << second << std::endl;
+
+    
+    std::cin.get();
+}
+
+// g++ string_ex.cpp -o string_ex
+// ./string_ex
+```
+
+### 3-39、C++的箭头操作符
+
+1、箭头操作符（->）用于通过指针访问对象的成员，箭头操作符（`->`）通常用于访问一个类（或结构体）的成员，当你有一个指向类（或结构体）对象的指针时，可以使用箭头操作符来访问对象的成员。
+
+```c++
+MyClass* ptr = new MyClass(); // 创建一个MyClass的对象，并将其地址赋给ptr
+
+ptr->memberFunction(); // 调用MyClass的成员函数
+ptr->memberVariable = 10; // 设置MyClass的成员变量的值
+
+```
+
+2、点操作符（.）用于通过对象本身访问成员，你有一个指向类对象的引用，你可以使用点操作符（`.`）来访问成员。
+
+```c++
+MyClass obj;
+obj.memberFunction(); // 调用MyClass的成员函数
+obj.memberVariable = 20; // 设置MyClass的成员变量的值
+
+```
+
+3、运算符重载；获取内存中某个值的偏移量。
+
+### 3-40、C++的动态数组
+
+1、动态数组通常是通过使用指针和`new`运算符来创建的。动态数组的大小可以在运行时确定，而不是在编译时确定。必须显式地调用`delete[]`来释放内存。
+
+```C++
+// 动态数组：在运行时决定数组的大小，数组的大小是在运行时通过new运算符动态分配的，因此可以根据需要来分配不同大小的数组。
+int* dynamicArray = new int[5]; // 创建一个包含5个整数的动态数组
+
+// 静态数组
+int myArray[5]; //数组的大小在编译时确定
+```
+
+```c++
+// 创建动态数组时不指定大小，你可以使用动态内存分配函数 new[] 来分配一个初始大小为0的数组，然后在运行时根据需要动态调整大小
+int* dynamicArray = nullptr; // 初始化指针为nullptr，表示没有分配内存
+int size; // 在运行时获取数组的大小
+std::cout << "Enter the size of the dynamic array: ";
+std::cin >> size;
+dynamicArray = new int[size]; // 动态分配大小为size的数组
+// 使用动态数组
+for (int i = 0; i < size; ++i) {
+    dynamicArray[i] = i * 10;
+}
+// 访问动态数组的元素
+for (int i = 0; i < size; ++i) {
+    std::cout << dynamicArray[i] << " ";
+}
+delete[] dynamicArray; // 释放动态数组的内存
+```
+
+2、std::vector: C++标准库中提供的一个动态数组（ArrayList）容器。尽量使用对象，不使用指针，这样再连续的内存栈中（在C++中，尽量使用对象而不是指针，因为对象会在栈上分配内存，而指针可能会在堆上分配内存。栈上分配的内存是连续的，可以提高访问效率。）。指针是一种，就像栈分配和堆分配一样，指针是最后的选择。 将vector传递给函数或类或其他时，确保通过引用传递，不修改就const引用，```void fuction(const std::vector<Vertex>& vertices)```。这样确保没有把整个数组复制到这个函数中。
+
+```c++
+#include<iostream>
+#include<vector>
+
+int main(){
+    std::vector<int> myVector; // 创建一个存储整数的空向量
+
+    myVector.push_back(10); // 将10添加到向量末尾
+    myVector.push_back(20); // 将20添加到向量末尾
+    myVector.push_back(30);
+
+    int value = myVector[0]; // 访问第一个元素，值为10
+    int size = myVector.size(); // 获取向量的大小，此时为2
+    for (int i = 0; i < myVector.size(); ++i) {
+        std::cout << myVector[i] << " ";
+    }
+    std::cout<<std::endl;
+    // myVector.pop_back(); // 删除向量末尾的元素
+    myVector.erase(myVector.begin() + 1); // 移除某一个元素
+    for (auto it = myVector.begin(); it != myVector.end(); ++it) {
+        std::cout << *it << " ";
+    }
+    myVector.clear(); // 清空向量，使其变为空    
+    std::cin.get();    
+}
+
+// g++ vector_ex.cpp -o vector_ex
+// ./vector_ex
+```
+
+3、std::vector 优化：push_back, 当旧分配的内存用完，旧会发生复制到新的分配，会将代码拖慢。优化复制：
+
+拷贝1：将vertex（构造的动态数组） 从main函数（main栈中）放到实际的vector分配的内存中。 ==》优化：适当的位置构造vertex在vector分配的内存中。使用emplace_back,  因为push_back 传递的是构建的vertex对象，emplace_back只是传递了构造函数的参数列表，在实际的vector内存中，使用参数构造一个vertex对象。
+
+拷贝2：vector默认大小是1，push过程中调整大小会发生复制。 ==》优化：避免大小调整的复制操作。制造足够大小的内存。```std::vector<Vertex> vertices; vertices.reserve(3);```  调整容量。
+
+### 3-41、C++ 中使用库
+
+1、静态链接：意味这这个库会被放到你的可执行文件中。静态链接在技术上更快，因为编译器或链接器实际上可以执行链接时优化之类的。通常静态链接是最好的选择。静态链接是在编译时发生的。
+
+2、使用动态库：动态链接是在运行时发生的。 
+
+3、创建和使用库：visualstudio中。
+
+### 3-42、C++ 处理多返回值
+
+1、元组 tuple,  pair, 
+
+```markdown
+1、函数void，参数引用传递。 这样没有复制拷贝操作，但是需要传递一个有效的变量。
+2、函数void, 指针。可以传递null。
+3、返回一个数组，如返回两个字符串：static std::string* fun(...){...  return new std::string[]{vs, fs};} 。使用了new，导致了堆分配的发生，如何避免：static std::array<std::string, 2> fun(...){... std::array<std::string, 2> result; result[0] = vs; result[1] = fs; return result;}。
+4、std::vector<std::string> 。Array在栈上创建，vector底层存储在堆上，所以技术上 std::array更快。
+5、返回不同类型的变量： 
+tuple: 基本上是一个类，包含x个变量，不关心类型。 std::tuple<std::string, std::string, int>; return std::make_pair(vs, fs);
+	调用和取数据：auto source = fun(...); std::string vs = std::get<0>(source); ... 用数字处理变量，代码可读性不是很好。
+pair: std::pair<std::string, std::string>;  source.first; source.second; 依旧可读性很差，所以使用struct
+6、struct结构体：
+	struct Shader{
+		std::string VertexSource;
+		std::string FragmentSource;
+	};
+	source.VertexSource; source.FragmentSource; 可读性很高。
+```
+
+### 3-43、C++的模板
+
+1、模板定义：模板允许定义一个可以根据你的用途进行编译的模板。（基于给编译器的规则让编译器给你写代码）
 
 
 
