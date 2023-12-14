@@ -234,7 +234,7 @@ TARGET_LINK_LIBRARIES(TestDemo dymc_lib)
 
 3、进阶： https://github.com/CnTransGroup/EffectiveModernCppChinese
 
-
+4、cppreference.com
 
 ## 2、C 基础
 
@@ -362,6 +362,12 @@ int* getRandom() {
 ### 3-6、vs调试
 
 1、断点、读取内存
+
+2、条件和操作断点
+
+
+
+
 
 ### 3-7、条件与分支（if）
 
@@ -545,13 +551,17 @@ public:
 
 5、删除构造函数方法（比如只有静态方法调用的类）：1）private 隐藏构造函数；2）类() = delete;
 
-### 3-20、C++ 析构函数
+### 3-20、C++ 析构函数/虚析构函数
 
 1、构造函数是创建一个新的实例对象时运行，常设置变量或者做任何需要的初始化，析构函数是在销毁对象时运行，卸载变量，清理使用过的内存。
 
 2、析构函数同样适用于栈和堆分配的对象：使用new分配一个对象，调用delete时候，析构函数会被调用。
 
 3、不调用析构函数，会造成内存泄漏（内存泄漏是指程序在运行时无法释放已经分配的内存，这可能会导致程序在持续运行时消耗越来越多的内存，最终耗尽系统资源。）。
+
+4、虚析构函数：多态。
+
+
 
 ### 3-21、栈（stack）上或堆（heap）上分配类的对象
 
@@ -1216,7 +1226,7 @@ RAM（随机存取存储器）和Cache（高速缓存）是计算机中用于存
 
 3、创建和使用库：visualstudio中。
 
-### 3-42、C++ 处理多返回值
+### 3-42、C++ 处理多返回值 / 结构化绑定
 
 1、元组 tuple,  pair, 
 
@@ -1236,6 +1246,21 @@ pair: std::pair<std::string, std::string>;  source.first; source.second; 依旧�
 	};
 	source.VertexSource; source.FragmentSource; 可读性很高。
 ```
+
+2、C++的结构化绑定（c++17新特性）：
+
+```c++
+// 避免使用结构体，且保持可读性的方法
+std::tuple<std::string, int> CreatePerson(){
+    return {"Wood", 25};
+}
+int main(){
+    auto[name, age] = CreatePerson();
+}
+// g++ -std=c++17 **.cpp -o **
+```
+
+
 
 ### 3-43、C++的模板
 
@@ -1495,11 +1520,151 @@ int main(){
 // ./time_chrono_ex
 ```
 
-3-52、
+### 3-52、C++ 排序
+
+1、std::sort
+
+### 3-53、C++类型相关
+
+1、C++是强类型语言，不是所有东西都用auto去声明，C++ 有一个类型系统，创建变量的时候，必须声明是整数/双精度数/布尔数/结构体/类。
+
+2、C++ 中，虽然类型是由编译器强制执行的，但可以直接访问内存。
+
+3、类型绕过。类型双关，不改变地址，更高效率。
+
+### 3-54、联合体union
+
+1、一个联合体只能有一个成员。给同一个变量取两个不同的名字。
 
 
 
+### 3-55、C++的类型转换
 
+1、C语言风格：隐式与显式类型转换
+
+2、C++语言风格：静态转换static_cast<> / 动态转换 dynamic_cast<>/常量转换 const_cast<>/ 重新解释转换 reinterpret_cast<>
+
+```c++
+#include<iostream>
+
+
+class Base {
+    virtual void foo() {}
+};
+
+class Derived : public Base{};
+int main(){
+
+    // 静态转换（static_cast）：
+    // 用于基本类型之间的转换，以及具有继承关系的类之间的转换。
+    // 在编译时进行检查，相对安全。
+    int a = 10;
+    double b = static_cast<double>(a);
+
+    // 动态转换（dynamic_cast）
+    // 用于类层次结构中的多态类型转换，需要有虚函数。
+    // 在运行时进行检查，只能用于指针或引用。
+    Base* basePtr = new Derived();
+    Derived* derivedPtr = dynamic_cast<Derived*>(basePtr);
+
+    // 常量转换（const_cast）:
+    // 用于添加或删除变量的常量性。
+    // 主要用于指针或引用
+    const int c = 10;
+    int* d = const_cast<int*>(&c);
+    
+    // 重新解释转换（reinterpret_cast）：
+    // 用于不同类型之间的二进制位的转换，通常用于指针之间的转换。
+    // 非常危险，慎用。
+    // int* ptr = reinterpret_cast<int*>(someVoidPointer);
+
+
+    std::cin.get();
+}
+// g++ type_conversion_ex.cpp -o type_conversion_ex
+// ./type_conversion_ex
+```
+
+3、dynamic_cast（动态转换类型）：为何可以检查，因为存储了运行时类型信息（rtti: runtime type information). 
+
+
+
+### 3-56、c++的预编译头文件
+
+1、使用预编译头文件：加速编译时间；stdafx.h； stdafx.cpp
+
+2、C++的预编译头文件（Precompiled Header）是一种优化编译时间的机制，它允许将常用的头文件提前编译并保存为二进制文件，以便在后续编译过程中加速编译。预编译头文件通常使用文件扩展名 `.pch`（Precompiled Header）。
+
+
+
+### 3-57、C++17新特性：如何处理OPTIONAL数据 / 单一变量存放多种类型的数据variant/ 存储任意类型的数据 any
+
+1、std::optional， C++17引入的模板类，用于表示一个可能包含值的容器。
+
+2、存放多种类型的数据：union； C++17引入的`std::variant`或`std::any`；
+
+3、union：空间大小为其中最大的元素所占空间大小； std::variant ， 空间大小为所有类型所占空间大小的和，可以理解为创建了一共结构体或类，将不同的数据类型存储为那个类或结构体中的成员。
+
+
+
+### 3-58、多线程
+
+1、C++11的库特性：std::async` 是 C++11 标准引入的一个工具，用于支持异步任务的启动。它允许你创建一个异步任务，并返回一个 `std::future` 对象，用于获取异步操作的结果。
+
+异步任务: 是指可以在后台执行而不阻塞主线程的任务。在编程中，异步任务通常用于执行耗时的操作，以确保主线程能够继续执行其他任务而不被阻塞。
+
+```C++
+#include <iostream>
+#include <future>
+#include <chrono>
+
+int add(int a, int b) {
+    // 模拟一个耗时的操作
+    std::this_thread::sleep_for(std::chrono::seconds(20));
+    return a + b;
+}
+
+int main() {
+    // 启动异步任务
+    // std::future<int> result = std::async(add, 2, 3);
+
+    // 使用 std::launch::async 强制立即启动异步任务
+    std::future<int> result = std::async(std::launch::async, add, 2, 3);
+
+    // 使用 std::launch::deferred 延迟启动异步任务
+    // std::future<int> result = std::async(std::launch::deferred, add, 2, 3);
+
+    // 在这里进行其他操作，主线程不会被阻塞
+    for (int i = 0; i < 5; ++i) {
+        std::cout << "Main thread is doing other work..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+    }
+
+    // 获取异步任务的结果
+    int sum = result.get();
+
+    std::cout << "Sum: " << sum << std::endl;
+
+    return 0;
+}
+// g++ -pthread async_ex.cpp -o async_ex
+// ./async_ex
+
+```
+
+2、互斥锁 std::mutex, 
+
+
+
+### 3-59、让字符串（string）更快
+
+1、std::string_view, C++ 17引入的一个新类，一种轻量级、非拥有、不可变的字符串视图类。它提供了对字符串的非拥有引用，允许你轻松地在不复制字符串的情况下对其进行操作。
+
+
+
+### 3-60、C++可视化基准测试
+
+1、chrome://tracing/ 进行计时与与线程分析
 
 
 
